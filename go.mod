@@ -1,5 +1,5 @@
-module github.com/waltereidi/GO_RabbitMqHandler
+module go_rabbitmqhandler
 
 go 1.26.2
 
-require github.com/streadway/amqp v1.1.0 // indirect
+require github.com/streadway/amqp v1.1.0

@@ -1,5 +1,5 @@
 package interfaces
 
 type StrategyHandler interface {
-	Start() (string, error)
+	Start() ([]byte, error)
 }

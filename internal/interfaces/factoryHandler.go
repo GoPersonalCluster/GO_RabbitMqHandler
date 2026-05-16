@@ -1,5 +1,5 @@
 package interfaces
 
 type FactoryHandler interface {
-	GetStrategy() (StrategyHandler, error)
+	CreateStrategy(body *[]byte) (StrategyHandler, error)
 }

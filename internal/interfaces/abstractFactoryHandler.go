@@ -1,5 +1,5 @@
 package interfaces
 
 type AbstractFactoryHandler interface {
-	GetFactory() (StrategyHandler, error)
+	CreateStrategy(body *[]byte) (FactoryHandler, error)
 }
