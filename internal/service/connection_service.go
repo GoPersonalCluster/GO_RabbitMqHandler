@@ -8,13 +8,14 @@ import (
 )
 
 type RabbitMQConfig struct {
-	port        int
-	host        string
-	queueConfig []queueConfig
-	username    string
-	password    string
-	errors      []error
-	channel     *amqp.Channel
+	port      int
+	host      string
+	consumers []consumers
+	username  string
+	password  string
+	errors    []error
+	channel   *amqp.Channel
+	publishers []publishers
 }
 
 // type queueConfig struct {
@@ -34,7 +35,7 @@ func WithPort(port int) Option {
 		s.port = port
 	}
 }
-func AddQueue(queueName string, abstractFactory interfaces.AbstractFactoryHandler) Option {
+func AddConsumer(queueName string, abstractFactory interfaces.AbstractFactoryHandler) Option {
 	return func(s *RabbitMQConfig) {
 		s.queueConfig = append(s.queueConfig,
 			queueConfig{

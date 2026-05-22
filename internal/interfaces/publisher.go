@@ -1,5 +1,5 @@
 package interfaces
 
 type Publisher interface {
-	Publish(queueName string, message []byte) error
+	Publish(message []byte) error
 }

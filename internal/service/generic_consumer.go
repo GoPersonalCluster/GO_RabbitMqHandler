@@ -6,7 +6,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type queueConfig struct {
+type consumers struct {
 	name            string
 	abstractFactory interfaces.AbstractFactoryHandler
 	publisher       *interfaces.Publisher
@@ -36,7 +36,7 @@ func ConfigureConsumer() Option {
 				nil,   // args
 			)
 			rmc.failOnError(err, "Erro ao registrar consumer")
-			rmc.HandleMessage(msgs, qn.abstractFactory)
+			rmc.HandleMessage(msgs, qn.abstractFactory, *qn.publisher)
 
 		}
 		// // 📬 Declarar fila
@@ -47,7 +47,7 @@ func ConfigureConsumer() Option {
 
 func (hm *RabbitMQConfig) HandleMessage(msgs <-chan amqp.Delivery,
 	abstractFactory interfaces.AbstractFactoryHandler,
-	publisher *interfaces.Publisher) {
+	publisher interfaces.Publisher) {
 	forever := make(chan bool)
 
 	for d := range msgs {
@@ -64,7 +64,7 @@ func (hm *RabbitMQConfig) HandleMessage(msgs <-chan amqp.Delivery,
 		response, err := strategy.Start()
 
 		if publisher != nil {
-			err := publisher.Publish("", response)
+			err := publisher.Publish(response)
 			if err != nil {
 				hm.failOnError(err, "Erro ao publicar mensagem")
 			}
