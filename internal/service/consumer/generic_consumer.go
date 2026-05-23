@@ -1,8 +1,7 @@
-package service
+package consumer
 
 import (
 	"go_rabbitmqhandler/internal/interfaces"
-
 	"github.com/streadway/amqp"
 )
 
@@ -10,6 +9,7 @@ type consumers struct {
 	name            string
 	abstractFactory interfaces.AbstractFactoryHandler
 	publisher       *interfaces.Publisher
+	consumer		<-chan amqp.Delivery
 }
 
 func ConfigureConsumer() Option {

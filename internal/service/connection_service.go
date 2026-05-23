@@ -3,19 +3,20 @@ package service
 import (
 	"go_rabbitmqhandler/internal/interfaces"
 	"log"
-
+	"slices"
 	"github.com/streadway/amqp"
 )
 
 type RabbitMQConfig struct {
-	port      int
-	host      string
-	consumers []consumers
-	username  string
-	password  string
-	errors    []error
-	channel   *amqp.Channel
+	port       int
+	host       string
+	consumers  []consumers
+	username   string
+	password   string
+	errors     []error
+	channel    []*amqp.Channel
 	publishers []publishers
+	connection *amqp.Connection
 }
 
 // type queueConfig struct {
@@ -74,7 +75,12 @@ func ConfigureConnection() Option {
 	return func(rmc *RabbitMQConfig) {
 
 		conn, err := amqp.Dial("amqp://admin:admin@localhost:5672/")
-		rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
+		if err != nil {
+			rmc.errors = append(rmc.errors, err)
+			rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
+		}
+		rmc.connection = conn
+
 		defer conn.Close()
 		// // 📡 Canal
 		ch, err := conn.Channel()
@@ -83,112 +89,19 @@ func ConfigureConnection() Option {
 		rmc.channel = ch
 	}
 }
+func (rmc *RabbitMQConfig) CloseConnection() {
+	defer rmc.connection.Close()
+}
+func (rmc *RabbitMQConfig) CloseChannel(channelName string) {
+	index := slices.IndexFunc(&rmc.consumers , func(s string) bool {
+		return n > 15
+	})
 
-// func ConfigureQueue() Option {
-// 	f := func(rmc *RabbitMQConfig) {
-// 		for _, qn := range rmc.queueConfig {
-// 			q, err := rmc.channel.QueueDeclare(
-// 				qn.name, // nome
-// 				true,    // durável
-// 				false,   // auto-delete
-// 				false,   // exclusiva
-// 				false,   // no-wait
-// 				nil,     // args
-// 			)
-// 			rmc.failOnError(err, "Erro ao declarar fila")
+}
 
-// 			// 👂 Consumir mensagens
-// 			msgs, err := rmc.channel.Consume(
-// 				q.Name,
-// 				"",    // consumer
-// 				false, // auto-ack (false = manual)
-// 				false, // exclusive
-// 				false, // no-local
-// 				false, // no-wait
-// 				nil,   // args
-// 			)
-// 			rmc.failOnError(err, "Erro ao registrar consumer")
-// 			rmc.HandleMessage(msgs, qn.abstractFactory)
-
-// 		}
-// 		// // 📬 Declarar fila
-
-// 	}
-// 	return f
-// }
-
-// func (hm *RabbitMQConfig) HandleMessage(msgs <-chan amqp.Delivery, abstractFactory interfaces.AbstractFactoryHandler) {
-// 	forever := make(chan bool)
-
-// 	for d := range msgs {
-// 		log.Printf("📥 Mensagem recebida: %s", d.Body)
-
-// 		factory, err := abstractFactory.CreateStrategy(&d.Body)
-// 		if err != nil {
-// 			hm.failOnError(err, "Erro ao obter factory")
-// 		}
-
-// 		strategy, err := factory.CreateStrategy(&d.Body)
-// 		if err != nil {
-// 			hm.failOnError(err, "Erro ao criar estratégia")
-// 		}
-// 		strategy.Start()
-
-// 		// ⚙️ Processamento da mensagem
-// 		err := hm.processMessage(factory, d.Body)
-
-// 		if err != nil {
-// 			log.Printf("❌ Erro ao processar: %s", err)
-// 			//d.Nack(false, true) // requeue
-// 			d.Ack(false)
-// 			continue
-// 		}
-
-// 		// ✅ Confirma processamento
-// 		d.Ack(false)
-
-// 	}
-
-// 	<-forever
-
-// }
-
-// func (cho *RabbitMQConfig) configureHost() {
-// 	conn, err := amqp.Dial("amqp://admin:admin@localhost:5672/")
-// 	cho.failOnError(err, "Erro ao conectar no RabbitMQ")
-// 	defer conn.Close()
-
-// 	// // 📡 Canal
-// 	ch, err := conn.Channel()
-// 	cho.failOnError(err, "Erro ao abrir canal")
-// 	defer ch.Close()
-
-// 	// // 📬 Declarar fila
-// 	q, err := ch.QueueDeclare(
-// 		"LLM_QUEUE", // nome
-// 		true,        // durável
-// 		false,       // auto-delete
-// 		false,       // exclusiva
-// 		false,       // no-wait
-// 		nil,         // args
-// 	)
-// 	cho.failOnError(err, "Erro ao declarar fila")
-
-//		// 👂 Consumir mensagens
-//		msgs, err := ch.Consume(
-//			q.Name,
-//			"",    // consumer
-//			false, // auto-ack (false = manual)
-//			false, // exclusive
-//			false, // no-local
-//			false, // no-wait
-//			nil,   // args
-//		)
-//		cho.failOnError(err, "Erro ao registrar consumer")
-//		return msgs, nil
-//	}
 func (FoE *RabbitMQConfig) failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
+		FoE.errors = append(FoE.errors, err)
 	}
 }
