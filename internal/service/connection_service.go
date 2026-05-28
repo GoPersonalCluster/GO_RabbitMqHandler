@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"go_rabbitmqhandler/internal/interfaces"
+	"go_rabbitmqhandler/internal/service/publisher"
 	"log"
 
 	"github.com/streadway/amqp"
@@ -20,6 +21,16 @@ type Option func(*RabbitMQConfig) error
 func AddConsumer(consumer interfaces.Consumer) Option {
 	return func(cfg *RabbitMQConfig) error {
 		cfg.consumers = append(cfg.consumers, consumer)
+
+		return nil
+	}
+}
+func AddPublisher(queueName string) Option {
+	return func(cfg *RabbitMQConfig) error {
+		genericPublisher := &publisher.GenericPublisher{}
+		genericPublisher.SetQueueName(queueName)
+
+		cfg.publishers = append(cfg.publishers, genericPublisher)
 
 		return nil
 	}
@@ -48,6 +59,7 @@ func ConfigureConnection(host string, port string, un string, pwd string) Option
 		return nil
 	}
 }
+
 func (rmc *RabbitMQConfig) CloseConnection() {
 	defer rmc.connection.Close()
 }
