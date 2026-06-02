@@ -9,7 +9,7 @@ import (
 )
 
 type RabbitMQConfigComposite[T any] struct {
-	channels   ChannelConfig[T]
+	channel    ChannelConfig[T]
 	connection *amqp.Connection
 }
 type ChannelConfig[T any] struct {
@@ -33,74 +33,40 @@ func FindOrElse[T any](
 	return orElse()
 }
 
-func (rmc *RabbitMQConfigComposite[T]) GetChannel(channelName string) ChannelConfig[T] {
-
-	channel := FindOrElse(
-		rmc.channels.consumers ,
-		func(p ChannelConfig[T]) bool {
-			return p.name == channelName
-		},
-		nil,
-	)
-
-	return channel
-}
-
 func (rmc *RabbitMQConfigComposite[T]) AddConsumer(channelName string,
 	queueName string,
 	abstractFactory interfaces.AbstractFactoryHandler,
-	consumer interfaces.Consumer[T] ){
+	consumer interfaces.Consumer[T]) {
 
-	channel := rmc.GetChannel(channelName)
-
-	channel.consumers = append(channel.consumers, abstractFactory )
-
+	rmc.channel.consumers = append(rmc.channel.consumers, consumer)
 }
 
-func (rmc *RabbitMQConfigComposite[T]) AddPublisher(queueName string) {
-
-}
-func AddChannel(channelName string) Option {
-	return func(rmc *RabbitMQConfigComposite) error {
-
-		channel, err := rmc.connection.Channel("default")
-
-		return nil
-	}
+func (rmc *RabbitMQConfigComposite[T]) AddPublisher(publisher interfaces.Publisher) {
+	rmc.channel.publishers = append(rmc.channel.publishers, publisher)
 }
 
-func (c *RabbitMQConfigComposite) Configure(opts ...Option) (*RabbitMQConfigComposite, []error) {
-	s := &RabbitMQConfigComposite{}
-	errors := []error{}
+func (rmc *RabbitMQConfigComposite[T]) ConfigureConnection(host string, port int, un string, pwd string) {
+	conn, err := amqp.Dial(fmt.Sprintf(`amqp://%s:%s@%s:%d/`,
+		un,
+		pwd,
+		host,
+		port))
+	rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
+	defer conn.Close()
 
-	for _, opt := range opts {
-		opt(s)
+	// // 📡 Canal
+	ch, err := conn.Channel()
+	rmc.channel.channel = ch
 
-	}
-	return s, errors
+	rmc.failOnError(err, "Erro ao abrir canal")
+	defer rmc.CloseConnection()
 }
 
-func ConfigureConnection(host string, port string, un string, pwd string) Option {
-	return func(rmc *RabbitMQConfigComposite) error {
-
-		conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%d/", un, pwd, host, port))
-		if err != nil {
-			return err
-		}
-		rmc.connection = conn
-
-		return nil
-	}
+func (rmc *RabbitMQConfigComposite[T]) CloseConnection() {
+	rmc.connection.Close()
 }
 
-func (rmc *RabbitMQConfigComposite) CloseConnection() {
-	defer rmc.connection.Close()
-}
-func (rmc *RabbitMQConfigComposite) CloseChannel(channelName string) {
-
-}
-
-func (FoE *RabbitMQConfigComposite) failOnError(err error, msg string) {
+func (FoE *RabbitMQConfigComposite[T]) failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 		//FoE.errors = append(FoE.errors, err)
