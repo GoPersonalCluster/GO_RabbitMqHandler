@@ -5,6 +5,6 @@ import (
 )
 
 type Consumer[T any] interface {
-	Consume(afh *AbstractFactoryHandler, channel *amqp.Channel) (T, error)
+	Consume() (T, error)
 	SetQueue(queueName string)
 }

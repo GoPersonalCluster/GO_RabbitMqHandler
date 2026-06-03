@@ -6,53 +6,46 @@ import (
 	"github.com/streadway/amqp"
 )
 
-type GenericConsumer struct {
+type GenericConsumer[T any] struct {
 	name            string
 	abstractFactory interfaces.AbstractFactoryHandler
-	consumer        <-chan amqp.Delivery
+	delivery        <-chan amqp.Delivery
 }
 
-func ConfigureConsumer() Option {
-	f := func(rmc *RabbitMQConfig) {
-		for _, qn := range rmc.queueConfig {
-			q, err := rmc.channel.QueueDeclare(
-				qn.name, // nome
-				true,    // durável
-				false,   // auto-delete
-				false,   // exclusiva
-				false,   // no-wait
-				nil,     // args
-			)
-			rmc.failOnError(err, "Erro ao declarar fila")
-
-			// 👂 Consumir mensagens
-			msgs, err := rmc.channel.Consume(
-				q.Name,
-				"",    // consumer
-				false, // auto-ack (false = manual)
-				false, // exclusive
-				false, // no-local
-				false, // no-wait
-				nil,   // args
-			)
-			rmc.failOnError(err, "Erro ao registrar consumer")
-			rmc.HandleMessage(msgs, qn.abstractFactory, *qn.publisher)
-
-		}
-		// // 📬 Declarar fila
-
+func (Cc *GenericConsumer[T]) ConfigureConsumer(ch *amqp.Channel) error {
+	q, err := ch.QueueDeclare(
+		Cc.name, // nome
+		true,    // durável
+		false,   // auto-delete
+		false,   // exclusiva
+		false,   // no-wait
+		nil,     // args
+	)
+	if err != nil {
+		return err
 	}
-	return f
+	// 👂 Consumir mensagens
+	msgs, err := ch.Consume(
+		q.Name,
+		"",    // consumer
+		false, // auto-ack (false = manual)
+		false, // exclusive
+		false, // no-local
+		false, // no-wait
+		nil,   // args
+	)
+	if err != nil {
+		return err
+	}
+	Cc.delivery = msgs
 }
 
-func (hm *RabbitMQConfig) HandleMessage(msgs <-chan amqp.Delivery,
-	abstractFactory interfaces.AbstractFactoryHandler,
-	publisher interfaces.Publisher) {
+func (c *GenericConsumer[T]) Consume() {
 	forever := make(chan bool)
 
-	for d := range msgs {
+	for d := range c.delivery {
 
-		factory, err := abstractFactory.CreateStrategy(&d.Body)
+		factory, err := c.abstractFactory.CreateStrategy(&d.Body)
 		if err != nil {
 			hm.failOnError(err, "Erro ao obter factory")
 		}

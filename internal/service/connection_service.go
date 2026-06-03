@@ -16,7 +16,6 @@ type ChannelConfig[T any] struct {
 	publishers []interfaces.Publisher
 	consumers  []interfaces.Consumer[T]
 	channel    *amqp.Channel
-	name       string
 }
 
 func FindOrElse[T any](
@@ -33,7 +32,7 @@ func FindOrElse[T any](
 	return orElse()
 }
 
-func (rmc *RabbitMQConfigComposite[T]) AddConsumer(channelName string,
+func (rmc *RabbitMQConfigComposite[T]) AddConsumer(
 	queueName string,
 	abstractFactory interfaces.AbstractFactoryHandler,
 	consumer interfaces.Consumer[T]) {
