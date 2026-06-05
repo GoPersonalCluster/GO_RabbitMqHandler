@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"go_rabbitmqhandler/internal/interfaces"
 	"log"
 
@@ -17,7 +16,6 @@ type ChannelConfig struct {
 	consumers  []interfaces.Consumer
 	channel    *amqp.Channel
 }
-
 
 func FindOrElse[T any](
 	items []T,
@@ -45,12 +43,8 @@ func (rmc *RabbitMQConfigComposite) AddPublisher(publisher interfaces.Publisher)
 	rmc.channel.publishers = append(rmc.channel.publishers, publisher)
 }
 
-func (rmc *RabbitMQConfigComposite) ConfigureConnection(host string, port int, un string, pwd string) {
-	conn, err := amqp.Dial(fmt.Sprintf(`amqp://%s:%s@%s:%d/`,
-		un,
-		pwd,
-		host,
-		port))
+func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
+	conn, err := amqp.Dial(`amqp://admin:admin@localhost:5672/`)
 	rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
 	defer conn.Close()
 

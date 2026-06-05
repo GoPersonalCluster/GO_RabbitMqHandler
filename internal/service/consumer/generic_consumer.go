@@ -45,7 +45,7 @@ func (c *GenericConsumer) Consume() []byte {
 
 	for d := range c.delivery {
 
-		factory, err := c.abstractFactory.CreateStrategy(&d.Body)
+		factory, err := c.config.AbstractFactory.CreateStrategy(&d.Body)
 		if err != nil {
 			hm.failOnError(err, "Erro ao obter factory")
 		}
