@@ -39,6 +39,45 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - ./configs/development.env
+
+    volumes:
+      - .:/app
+
+    working_dir: /app
+
+    ports:
+      - "8080:8080"
+
+    command:
+      - go
+      - run
+      - ./cmd/api
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - ./configs/development.env
+
+    volumes:
+      - .:/app
+
+    working_dir: /app
+
+    command:
+      - go
+      - test
+      - ./...
+      - -v
+
 
 volumes:
   postgres_data:
