@@ -1,5 +1,5 @@
 build:
-	docker-compose build
+	docker-compose up -d
 bash-app:
 	docker exec -it app bash
 reset-docker:

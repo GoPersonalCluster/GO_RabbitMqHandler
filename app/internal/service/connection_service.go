@@ -44,8 +44,17 @@ func (rmc *RabbitMQConfigComposite) AddPublisher(publisher interfaces.Publisher)
 }
 
 func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
-	conn, err := amqp.Dial(`amqp://admin:admin@localhost:5672/`)
+	evc := config.NewEnvironmentConfig()
+
+
+	conn, err := amqp.Dial(fmt.Sprintf(`amqp://%s:%s@%s:%s/`, 
+		evc.RabbitMQUsername, 
+		evc.RabbitMQPassword, 
+		evc.RabbitMQHost, 
+		evc.RabbitMQPort))
+
 	rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
+	
 	defer conn.Close()
 
 	// // 📡 Canal
