@@ -47,7 +47,7 @@ func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
 	evc := config.NewEnvironmentConfig()
 
 
-	conn, err := amqp.Dial(fmt.Sprintf(`amqp://%s:%s@%s:%s/`, 
+	conn, err := amqp.Dial(	fmt.Sprintf(`amqp://%s:%s@%s:%s/`, 
 		evc.RabbitMQUsername, 
 		evc.RabbitMQPassword, 
 		evc.RabbitMQHost, 
@@ -64,22 +64,21 @@ func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
 	rmc.failOnError(err, "Erro ao abrir canal")
 	defer rmc.CloseConnection()
 }
+
 func (rmc *RabbitMQConfigComposite) Start() error {
 	err = rmc.isValidConfiguration() 
 	if err != nil {
 		return err
 	}
+
 	for _, consumer := range rmc.channel.consumers {
 		go rmc.consumeAsync(consumer)		
 	}
-	
-
 }
 
 func (rmc *RabbitMQConfigComposite) consumeAsync(consumer interfaces.Consumer){
 	
 	consumer.Consume(rmc.channel.channel)
-
 
 }
 

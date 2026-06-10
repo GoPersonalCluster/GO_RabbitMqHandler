@@ -3,23 +3,25 @@ package consumer
 import (
 	"go_rabbitmqhandler/internal/interfaces"
 	"go_rabbitmqhandler/internal/model"
+	"go_rabbitmqhandler/internal/service/publisher"
 
 	"github.com/streadway/amqp"
 )
 
 type GenericConsumer struct {
-	config          model.ConsumerConfig
-	delivery        <-chan amqp.Delivery
+	config    model.ConsumerConfig
+	delivery  <-chan amqp.Delivery
+	publisher interfaces.Publisher
 }
 
-func (Cc *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
+func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
 	q, err := ch.QueueDeclare(
-		Cc.config.QueueName, // nome
-		Cc.config.Durable,                // durável
-		Cc.config.AutoDelete,               // auto-delete
-		Cc.config.Exclusive,               // exclusiva
-		Cc.config.NoWait,               // no-wait
-		Cc.config.Args,                 // args
+		gC.config.QueueName,  // nome
+		gC.config.Durable,    // durável
+		gC.config.AutoDelete, // auto-delete
+		gC.config.Exclusive,  // exclusiva
+		gC.config.NoWait,     // no-wait
+		gC.config.Args,       // args
 	)
 	if err != nil {
 		return err
@@ -27,43 +29,59 @@ func (Cc *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
 	// 👂 Consumir mensagens
 	msgs, err := ch.Consume(
 		q.Name,
-		Cc.config.QueueName, // nome
-		Cc.config.Durable,                // durável
-		Cc.config.AutoDelete,               // auto-delete
-		Cc.config.Exclusive,               // exclusiva
-		Cc.config.NoWait,               // no-wait
-		Cc.config.Args,                 // args
+		gC.config.QueueName,  // nome
+		gC.config.Durable,    // durável
+		gC.config.AutoDelete, // auto-delete
+		gC.config.Exclusive,  // exclusiva
+		gC.config.NoWait,     // no-wait
+		gC.config.Args,       // args
 	)
+
 	if err != nil {
 		return err
 	}
-	Cc.delivery = msgs
+	gC.delivery = msgs
+	gC.setPublisher(ch)
+	return nil
 }
 
-func (c *GenericConsumer) Consume(ch *amqp.Channel){
+func (cP *GenericConsumer) setPublisher(ch *amqp.Channel) {
+	publisher = publisher.FilterPublisher{}
+	cP.publisher = &publisher
+
+}
+func (cP *GenericConsumer) getStrategy(body []byte) (interfaces.StrategyHandler, error) {
+	factory, err := cP.config.AbstractFactory.CreateStrategy(&body)
+	if err != nil {
+		//cP.failOnError(err, "Erro ao obter factory")
+	}
+
+	strategy, err := factory.CreateStrategy(&body)
+	if err != nil {
+		//cP.failOnError(err, "Erro ao criar estratégia")
+	}
+	return strategy, nil
+}
+
+func (c *GenericConsumer) Consume(ch *amqp.Channel) {
+
 	forever := make(chan bool)
 
 	for d := range c.delivery {
 
-		factory, err := c.config.AbstractFactory.CreateStrategy(&d.Body)
+		strategy, err := c.getStrategy(d.Body)
 		if err != nil {
-			hm.failOnError(err, "Erro ao obter factory")
+			//hm.failOnError(err, "Erro ao obter estratégia")
 		}
 
-		strategy, err := factory.CreateStrategy(&d.Body)
-		if err != nil {
-			hm.failOnError(err, "Erro ao criar estratégia")
-		}
 		response, err := strategy.Start()
 
-		if publisher != nil {
-			err := publisher.Publish(response)
+		if c.publisher != nil {
+			err := c.publisher.Publish(response)
 			if err != nil {
-				hm.failOnError(err, "Erro ao publicar mensagem")
+				//hm.failOnError(err, "Erro ao publicar mensagem")
 			}
 		}
-		// ⚙️ Processamento da mensagem
-		//		err := hm.processMessage( factory, d.Body )
 
 		if err != nil {
 			//log.Printf("❌ Erro ao processar: %s", err)
