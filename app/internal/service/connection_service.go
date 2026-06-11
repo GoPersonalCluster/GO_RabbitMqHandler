@@ -1,7 +1,10 @@
 package service
 
 import (
-	"go_rabbitmqhandler/internal/interfaces"
+	"fmt"
+	"go_rabbitmqhandler/internal/config"
+	"go_rabbitmqhandler/internal/service/consumer"
+	"go_rabbitmqhandler/internal/service/publisher"
 	"log"
 
 	"github.com/streadway/amqp"
@@ -12,8 +15,8 @@ type RabbitMQConfigComposite struct {
 	connection *amqp.Connection
 }
 type ChannelConfig struct {
-	publishers []interfaces.Publisher
-	consumers  []interfaces.Consumer
+	publishers []publisher.PublisherInterface
+	consumers  []consumer.Consumer
 	channel    *amqp.Channel
 }
 
@@ -33,28 +36,26 @@ func FindOrElse[T any](
 
 func (rmc *RabbitMQConfigComposite) AddConsumer(
 	queueName string,
-	abstractFactory interfaces.AbstractFactoryHandler,
-	consumer interfaces.Consumer) {
+	consumer consumer.Consumer) {
 
 	rmc.channel.consumers = append(rmc.channel.consumers, consumer)
 }
 
-func (rmc *RabbitMQConfigComposite) AddPublisher(publisher interfaces.Publisher) {
+func (rmc *RabbitMQConfigComposite) AddPublisher(publisher publisher.PublisherInterface) {
 	rmc.channel.publishers = append(rmc.channel.publishers, publisher)
 }
 
 func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
 	evc := config.NewEnvironmentConfig()
 
-
-	conn, err := amqp.Dial(	fmt.Sprintf(`amqp://%s:%s@%s:%s/`, 
-		evc.RabbitMQUsername, 
-		evc.RabbitMQPassword, 
-		evc.RabbitMQHost, 
+	conn, err := amqp.Dial(fmt.Sprintf(`amqp://%s:%s@%s:%s/`,
+		evc.RabbitMQUsername,
+		evc.RabbitMQPassword,
+		evc.RabbitMQHost,
 		evc.RabbitMQPort))
 
 	rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
-	
+
 	defer conn.Close()
 
 	// // 📡 Canal
@@ -66,27 +67,24 @@ func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
 }
 
 func (rmc *RabbitMQConfigComposite) Start() error {
-	err = rmc.isValidConfiguration() 
+	err := rmc.isValidConfiguration()
 	if err != nil {
 		return err
 	}
 
 	for _, consumer := range rmc.channel.consumers {
-		go rmc.consumeAsync(consumer)		
+		go rmc.consumeAsync(consumer)
 	}
 }
 
-func (rmc *RabbitMQConfigComposite) consumeAsync(consumer interfaces.Consumer){
-	
+func (rmc *RabbitMQConfigComposite) consumeAsync(consumer consumer.Consumer) {
+
 	consumer.Consume(rmc.channel.channel)
 
 }
 
-
 func (rmc *RabbitMQConfigComposite) isValidConfiguration() error {
-
-
-
+	return nil
 }
 func (rmc *RabbitMQConfigComposite) CloseConnection() {
 	rmc.connection.Close()

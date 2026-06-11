@@ -1,8 +1,6 @@
 package publisher
 
 import (
-	"errors"
-
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

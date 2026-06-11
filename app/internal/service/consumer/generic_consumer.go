@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"go_rabbitmqhandler/internal/interfaces"
 	"go_rabbitmqhandler/internal/model"
 	"go_rabbitmqhandler/internal/service/publisher"
 
@@ -11,7 +10,7 @@ import (
 type GenericConsumer struct {
 	config    model.ConsumerConfig
 	delivery  <-chan amqp.Delivery
-	publisher interfaces.Publisher
+	publisher publisher.PublisherInterface
 }
 
 func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
@@ -45,12 +44,12 @@ func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
 	return nil
 }
 
-func (cP *GenericConsumer) setPublisher(ch *amqp.Channel) {
-	publisher = publisher.FilterPublisher{}
-	cP.publisher = &publisher
+func (cP *GenericConsumer) setPublisher(ch *publisher.PublisherInterface) {
+	publisher := publisher.FilterPublisher{}
 
+	cP.publisher = publisher
 }
-func (cP *GenericConsumer) getStrategy(body []byte) (interfaces.StrategyHandler, error) {
+func (cP *GenericConsumer) getStrategy(body []byte) (StrategyHandler, error) {
 	factory, err := cP.config.AbstractFactory.CreateStrategy(&body)
 	if err != nil {
 		//cP.failOnError(err, "Erro ao obter factory")
@@ -80,6 +79,7 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 			err := c.publisher.Publish(response)
 			if err != nil {
 				//hm.failOnError(err, "Erro ao publicar mensagem")
+
 			}
 		}
 

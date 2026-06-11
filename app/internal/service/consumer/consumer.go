@@ -1,4 +1,4 @@
-package interfaces
+package consumer
 
 import (
 	"github.com/streadway/amqp"

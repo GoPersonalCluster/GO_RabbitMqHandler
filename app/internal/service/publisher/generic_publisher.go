@@ -9,6 +9,10 @@ import (
 type GenericPublisher struct {
 	queueName string
 }
+type PublisherInterface interface {
+	Publish(message []byte) error
+	SetChannel(channel *amqp.Channel)
+}
 
 func (sqn *GenericPublisher) SetChannel(channel *amqp.Channel) {
 	// Implementação específica para configurar o canal do publisher
