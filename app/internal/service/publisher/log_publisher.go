@@ -1,29 +1,24 @@
 package publisher
 
 import (
-	"errors"
-
 	amqp "github.com/streadway/amqp"
 )
 
-type GenericPublisher struct {
+type LogPublisher struct {
 	queueName string
 	channel   *amqp.Channel
 }
 
-func (sqn *GenericPublisher) SetChannel(channel *amqp.Channel) {
+func (sqn *LogPublisher) SetChannel(channel *amqp.Channel) {
 	// Implementação específica para configurar o canal do publisher
-	// Exemplo: sqn.channel = channel
+	sqn.channel = channel
 }
 
-func (gp *GenericPublisher) Publish(message []byte) error {
+func (gp *LogPublisher) Publish(message []byte) error {
 	// Implementação específica para publicar mensagem na fila
-	if gp.queueName == "" {
-		return errors.New("queueName não pode ser vazio")
-	}
 
 	err := gp.channel.Publish(
-		gp.queueName,
+		"LogQueue",
 		"",
 		false,
 		false,

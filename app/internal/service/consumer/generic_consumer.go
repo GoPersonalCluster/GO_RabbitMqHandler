@@ -1,16 +1,16 @@
 package consumer
 
 import (
-	"go_rabbitmqhandler/internal/model"
 	"go_rabbitmqhandler/internal/service/publisher"
 
 	"github.com/streadway/amqp"
 )
 
 type GenericConsumer struct {
-	config    model.ConsumerConfig
-	delivery  <-chan amqp.Delivery
-	publisher publisher.PublisherInterface
+	config          ConsumerConfig
+	delivery        <-chan amqp.Delivery
+	filterPublisher publisher.PublisherInterface
+	logPublisher    publisher.PublisherInterface
 }
 
 func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
@@ -40,25 +40,27 @@ func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
 		return err
 	}
 	gC.delivery = msgs
-	gC.setPublisher(ch)
+	gC.setFilterPublisher(ch)
 	return nil
 }
+func (cP *GenericConsumer) setLogPublisher(queueName string) {
+	cP.config.QueueName = queueName
+	
+}
 
-func (cP *GenericConsumer) setPublisher(ch *publisher.PublisherInterface) {
+func (cP *GenericConsumer) setFilterPublisher(ch *amqp.Channel) {
 	publisher := publisher.FilterPublisher{}
+	publisher.SetChannel(ch)
 
-	cP.publisher = publisher
+	cP.filterPublisher = &publisher
 }
 func (cP *GenericConsumer) getStrategy(body []byte) (StrategyHandler, error) {
-	factory, err := cP.config.AbstractFactory.CreateStrategy(&body)
+	strategy, err := cP.config.AbstractFactory.CreateStrategy(&body)
+
 	if err != nil {
 		//cP.failOnError(err, "Erro ao obter factory")
 	}
 
-	strategy, err := factory.CreateStrategy(&body)
-	if err != nil {
-		//cP.failOnError(err, "Erro ao criar estratégia")
-	}
 	return strategy, nil
 }
 

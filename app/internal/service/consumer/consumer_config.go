@@ -6,12 +6,13 @@ import (
 )
 
 type ConsumerConfig struct {
-	QueueName  string
-	Durable    bool
-	AutoDelete bool
-	Exclusive  bool
-	NoWait     bool
-	Args       map[string]interface{}
+	QueueName       string
+	Durable         bool
+	AutoDelete      bool
+	Exclusive       bool
+	NoWait          bool
+	Args            map[string]interface{}
+	AbstractFactory FactoryHandler
 }
 
 func (nCC *ConsumerConfig) NewConsumerConfig(queueName string,
@@ -19,16 +20,17 @@ func (nCC *ConsumerConfig) NewConsumerConfig(queueName string,
 	autoDelete bool,
 	exclusive bool,
 	noWait bool,
-	args map[string]interface{}) error {
+	args map[string]interface{},
+	abstractFactory FactoryHandler) error {
 
 	result := ConsumerConfig{
-		QueueName:  queueName,
-		Durable:    durable,
-		AutoDelete: autoDelete,
-		Exclusive:  exclusive,
-		NoWait:     noWait,
-		Args:       args,
-		// AbstractFactory: abstractFactory,
+		QueueName:       queueName,
+		Durable:         durable,
+		AutoDelete:      autoDelete,
+		Exclusive:       exclusive,
+		NoWait:          noWait,
+		Args:            args,
+		AbstractFactory: abstractFactory,
 	}
 
 	isValid := nCC.isValid(result)

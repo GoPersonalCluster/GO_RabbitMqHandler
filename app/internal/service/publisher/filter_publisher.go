@@ -1,30 +1,28 @@
 package publisher
 
 import (
-	amqp "github.com/rabbitmq/amqp091-go"
+	amqp "github.com/streadway/amqp"
 )
 
 type FilterPublisher struct {
 	queueName string
+	channel   *amqp.Channel
 }
 
 func (sqn *FilterPublisher) SetChannel(channel *amqp.Channel) {
 	// Implementação específica para configurar o canal do publisher
-	// Exemplo: sqn.channel = channel
+	sqn.channel = channel
 }
 
-func (gp *FilterPublisher) Publish(message []byte, channel *amqp.Channel) error {
+func (gp *FilterPublisher) Publish(message []byte) error {
 	// Implementação específica para publicar mensagem na fila
 
-	err := channel.Publish(
+	err := gp.channel.Publish(
 		"FilterQueue",
 		"",
 		false,
 		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        message,
-		})
+		GetAmqPublishingOptions(message))
 
 	if err != nil {
 		return err
