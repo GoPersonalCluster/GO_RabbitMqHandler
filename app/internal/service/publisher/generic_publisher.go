@@ -2,7 +2,7 @@ package publisher
 
 import (
 	"errors"
-
+	"go_rabbitmqhandler/internal/service/model"
 	amqp "github.com/streadway/amqp"
 )
 
@@ -11,9 +11,12 @@ type GenericPublisher struct {
 	channel   *amqp.Channel
 }
 
-func (sqn *GenericPublisher) SetChannel(channel *amqp.Channel) {
-	// Implementação específica para configurar o canal do publisher
-	// Exemplo: sqn.channel = channel
+func (sC *GenericPublisher) SetChannel(channel *amqp.Channel, queueName string) {
+	sC.channel = channel
+	sC.queueName = queueName
+}
+func (sMM *GenericPublisher) SetMessageModel(queueName string) {
+		
 }
 
 func (gp *GenericPublisher) Publish(message []byte) error {
