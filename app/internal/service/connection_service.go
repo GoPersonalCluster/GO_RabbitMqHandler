@@ -75,6 +75,7 @@ func (rmc *RabbitMQConfigComposite) Start() error {
 	for _, consumer := range rmc.channel.consumers {
 		go rmc.consumeAsync(consumer)
 	}
+	return nil
 }
 
 func (rmc *RabbitMQConfigComposite) consumeAsync(consumer consumer.Consumer) {

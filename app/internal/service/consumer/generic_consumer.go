@@ -45,12 +45,12 @@ func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
 }
 func (cP *GenericConsumer) setLogPublisher(queueName string) {
 	cP.config.QueueName = queueName
-	
+
 }
 
 func (cP *GenericConsumer) setFilterPublisher(ch *amqp.Channel) {
-	publisher := publisher.FilterPublisher{}
-	publisher.SetChannel(ch)
+	publisher := publisher.GenericPublisher{}
+	publisher.SetChannel(ch, "FilterQueue")
 
 	cP.filterPublisher = &publisher
 }
@@ -63,6 +63,7 @@ func (cP *GenericConsumer) getStrategy(body []byte) (StrategyHandler, error) {
 
 	return strategy, nil
 }
+
 
 func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 
@@ -77,8 +78,8 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 
 		response, err := strategy.Start()
 
-		if c.publisher != nil {
-			err := c.publisher.Publish(response)
+		if c.filterPublisher != nil {
+			err := c.filterPublisher.Publish(response)
 			if err != nil {
 				//hm.failOnError(err, "Erro ao publicar mensagem")
 
