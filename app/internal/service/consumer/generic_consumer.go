@@ -1,6 +1,8 @@
 package consumer
 
 import (
+	"go_rabbitmqhandler/internal/service/model"
+	"go_rabbitmqhandler/internal/service/parser"
 	"go_rabbitmqhandler/internal/service/publisher"
 
 	"github.com/streadway/amqp"
@@ -64,14 +66,19 @@ func (cP *GenericConsumer) getStrategy(body []byte) (StrategyHandler, error) {
 	return strategy, nil
 }
 
-
 func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 
 	forever := make(chan bool)
 
 	for d := range c.delivery {
+		parser := parser.JsonParser[model.IntegrationEvent]{}
+		i := parser.NewParser()
+		model,err := i.Decode(d.Body)
+		if err != nil {
+			//fail
+		}
 
-		strategy, err := c.getStrategy(d.Body)
+		strategy, err := c.getStrategy(model.Payload)
 		if err != nil {
 			//hm.failOnError(err, "Erro ao obter estratégia")
 		}

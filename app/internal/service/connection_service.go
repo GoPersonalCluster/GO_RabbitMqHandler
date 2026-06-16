@@ -79,9 +79,7 @@ func (rmc *RabbitMQConfigComposite) Start() error {
 }
 
 func (rmc *RabbitMQConfigComposite) consumeAsync(consumer consumer.Consumer) {
-
 	consumer.Consume(rmc.channel.channel)
-
 }
 
 func (rmc *RabbitMQConfigComposite) isValidConfiguration() error {

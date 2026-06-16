@@ -27,7 +27,7 @@ func (gp *GenericPublisher) Publish(message []byte) error {
 
 	err := gp.channel.Publish(
 		gp.queueName,
-		"",
+		"",		
 		false,
 		false,
 		GetAmqPublishingOptions(message))
