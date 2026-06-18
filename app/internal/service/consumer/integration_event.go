@@ -1,4 +1,13 @@
-package model
+package consumer
+
+type RabbitMQHandlerConfig struct {
+	Host            string
+	Port            int
+	Username        string
+	Password        string
+	Queue           string
+	AbstractFactory FactoryHandler
+}
 
 type IntegrationEvent struct {
 	EventName  string
@@ -11,7 +20,6 @@ type MetaHeader struct {
 	EventName string
 	Args      []Args
 	OccuredAt int64
-
 }
 
 type Args struct {
@@ -21,17 +29,17 @@ type Args struct {
 
 func (eP *IntegrationEvent) AddMetaHeader(
 	source string,
-eventName string,
-args []struct {
-	Key   string
-	Value string
-},
+	eventName string,
+	args []struct {
+		Key   string
+		Value string
+	},
 
-){
+) {
 
 }
 func (eP *IntegrationEvent) ExchangePayload(
 	payload []byte,
 ) {
-
+	eP.Payload = payload
 }

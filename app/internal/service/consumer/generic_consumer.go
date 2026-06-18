@@ -1,7 +1,6 @@
 package consumer
 
 import (
-	"go_rabbitmqhandler/internal/service/model"
 	"go_rabbitmqhandler/internal/service/parser"
 	"go_rabbitmqhandler/internal/service/publisher"
 
@@ -56,8 +55,8 @@ func (cP *GenericConsumer) setFilterPublisher(ch *amqp.Channel) {
 
 	cP.filterPublisher = &publisher
 }
-func (cP *GenericConsumer) getStrategy(body []byte) (StrategyHandler, error) {
-	strategy, err := cP.config.AbstractFactory.CreateStrategy(&body)
+func (cP *GenericConsumer) getStrategy(message IntegrationEvent) (StrategyHandler, error) {
+	strategy, err := cP.config.AbstractFactory.CreateStrategy(&message)
 
 	if err != nil {
 		//cP.failOnError(err, "Erro ao obter factory")
@@ -71,14 +70,14 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 	forever := make(chan bool)
 
 	for d := range c.delivery {
-		parser := parser.JsonParser[model.IntegrationEvent]{}
+		parser := parser.JsonParser[IntegrationEvent]{}
 		i := parser.NewParser()
-		model,err := i.Decode(d.Body)
+		model, err := i.Decode(d.Body)
 		if err != nil {
 			//fail
 		}
 
-		strategy, err := c.getStrategy(model.Payload)
+		strategy, err := c.getStrategy(model)
 		if err != nil {
 			//hm.failOnError(err, "Erro ao obter estratégia")
 		}
@@ -86,24 +85,37 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 		response, err := strategy.Start()
 
 		if c.filterPublisher != nil {
+			model.ExchangePayload(response)
 			err := c.filterPublisher.Publish(response)
 			if err != nil {
-				//hm.failOnError(err, "Erro ao publicar mensagem")
-
+				logPublisher := publisher.GenericPublisher{}
+				logPublisher.SetChannel(ch, "LogQueue")
+				model.ExchangePayload([]byte(err.Error()))
+				logPublisher.Publish([]byte(err.Error()))
 			}
 		}
 
 		if err != nil {
-			//log.Printf("❌ Erro ao processar: %s", err)
-			//d.Nack(false, true) // requeue
-			d.Ack(false)
+			logPublisher := publisher.GenericPublisher{}
+			logPublisher.SetChannel(ch, "LogQueue")
+			model.ExchangePayload([]byte(err.Error()))
+			logPublisher.Publish([]byte(err.Error()))
+			d.Ack(true)
 			continue
 		}
 
 		// ✅ Confirma processamento
-		d.Ack(false)
+		d.Ack(true)
 
 	}
 	<-forever
+
+}
+func (gC *GenericConsumer) PublishErrorLog(err error, ch *amqp.Channel) {
+	logPublisher := publisher.GenericPublisher{}
+	logPublisher.SetChannel(ch, "LogQueue")
+	model.ExchangePayload([]byte(err.Error()))
+	logPublisher.Publish([]byte(err.Error()))
+	d.Ack(true)
 
 }

@@ -1,5 +1,5 @@
 package consumer
 
 type FactoryHandler interface {
-	CreateStrategy(body *[]byte) (StrategyHandler, error)
+	CreateStrategy(event *IntegrationEvent) (StrategyHandler, error)
 }
