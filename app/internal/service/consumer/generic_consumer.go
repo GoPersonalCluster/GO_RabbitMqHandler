@@ -42,13 +42,14 @@ func (gC *GenericConsumer) ConfigureConsumer(ch *amqp.Channel) error {
 	}
 	gC.delivery = msgs
 	gC.setFilterPublisher(ch)
+	gC.setLogPublisher()
+
 	return nil
 }
-func (cP *GenericConsumer) setLogPublisher(queueName string) {
-	cP.config.QueueName = queueName
+func (cP *GenericConsumer) setLogPublisher() {
+	cP.config.QueueName = "LogQueue"
 
 }
-
 func (cP *GenericConsumer) setFilterPublisher(ch *amqp.Channel) {
 	publisher := publisher.GenericPublisher{}
 	publisher.SetChannel(ch, "FilterQueue")
@@ -59,7 +60,7 @@ func (cP *GenericConsumer) getStrategy(message IntegrationEvent) (StrategyHandle
 	strategy, err := cP.config.AbstractFactory.CreateStrategy(&message)
 
 	if err != nil {
-		//cP.failOnError(err, "Erro ao obter factory")
+		return nil, err
 	}
 
 	return strategy, nil
@@ -74,12 +75,14 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 		i := parser.NewParser()
 		model, err := i.Decode(d.Body)
 		if err != nil {
-			//fail
+			c.PublishErrorLog(err, ch, model)
+			continue
 		}
 
 		strategy, err := c.getStrategy(model)
 		if err != nil {
-			//hm.failOnError(err, "Erro ao obter estratégia")
+			c.PublishErrorLog(err, ch, model)
+			continue
 		}
 
 		response, err := strategy.Start()
@@ -88,18 +91,13 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 			model.ExchangePayload(response)
 			err := c.filterPublisher.Publish(response)
 			if err != nil {
-				logPublisher := publisher.GenericPublisher{}
-				logPublisher.SetChannel(ch, "LogQueue")
-				model.ExchangePayload([]byte(err.Error()))
-				logPublisher.Publish([]byte(err.Error()))
+				c.PublishErrorLog(err, ch, model)
+				continue
 			}
 		}
 
 		if err != nil {
-			logPublisher := publisher.GenericPublisher{}
-			logPublisher.SetChannel(ch, "LogQueue")
-			model.ExchangePayload([]byte(err.Error()))
-			logPublisher.Publish([]byte(err.Error()))
+			c.PublishErrorLog(err, ch, model)
 			d.Ack(true)
 			continue
 		}
@@ -111,11 +109,9 @@ func (c *GenericConsumer) Consume(ch *amqp.Channel) {
 	<-forever
 
 }
-func (gC *GenericConsumer) PublishErrorLog(err error, ch *amqp.Channel) {
+func (gC *GenericConsumer) PublishErrorLog(err error, ch *amqp.Channel, iE IntegrationEvent) {
 	logPublisher := publisher.GenericPublisher{}
 	logPublisher.SetChannel(ch, "LogQueue")
-	model.ExchangePayload([]byte(err.Error()))
+	iE.ExchangePayload([]byte(err.Error()))
 	logPublisher.Publish([]byte(err.Error()))
-	d.Ack(true)
-
 }

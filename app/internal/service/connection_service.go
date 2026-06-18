@@ -56,14 +56,14 @@ func (rmc *RabbitMQConfigComposite) ConfigureConnection() {
 
 	rmc.failOnError(err, "Erro ao conectar no RabbitMQ")
 
-	defer conn.Close()
+	//defer conn.Close()
 
 	// // 📡 Canal
 	ch, err := conn.Channel()
 	rmc.channel.channel = ch
 
 	rmc.failOnError(err, "Erro ao abrir canal")
-	defer rmc.CloseConnection()
+	//defer rmc.CloseConnection()
 }
 
 func (rmc *RabbitMQConfigComposite) Start() error {
