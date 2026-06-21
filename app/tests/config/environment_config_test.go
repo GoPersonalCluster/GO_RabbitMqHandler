@@ -3,7 +3,7 @@ package math
 import (
 	"testing"
 
-	"go_rabbitmqhandler/config"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/config"
 )
 
 func TestGetEnvironmentConfig(t *testing.T) {

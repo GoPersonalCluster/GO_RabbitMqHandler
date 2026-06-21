@@ -2,10 +2,11 @@ package service
 
 import (
 	"fmt"
-	"go_rabbitmqhandler/config"
-	"go_rabbitmqhandler/service/consumer"
-	"go_rabbitmqhandler/service/publisher"
 	"log"
+
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/config"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/consumer"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/publisher"
 
 	"github.com/streadway/amqp"
 )

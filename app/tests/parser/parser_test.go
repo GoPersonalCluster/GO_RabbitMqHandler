@@ -1,9 +1,10 @@
 package parser
 
 import (
-	"go_rabbitmqhandler/service/parser"
 	"reflect"
 	"testing"
+
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/parser"
 )
 
 type Person struct {

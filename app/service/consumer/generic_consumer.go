@@ -1,8 +1,8 @@
 package consumer
 
 import (
-	"go_rabbitmqhandler/service/parser"
-	"go_rabbitmqhandler/service/publisher"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/parser"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/publisher"
 
 	"github.com/streadway/amqp"
 )

@@ -2,9 +2,10 @@ package service_test
 
 import (
 	"bytes"
-	"go_rabbitmqhandler/service"
-	"go_rabbitmqhandler/service/consumer"
 	"testing"
+
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/consumer"
 )
 
 func TestConnectionService(t *testing.T) {
