@@ -1,5 +1,4 @@
-module go_rabbitmqhandler
-
+module github.com/GoPersonalCluster/GO_RabbitMqHandler
 go 1.23
 
 require github.com/streadway/amqp v1.1.0
