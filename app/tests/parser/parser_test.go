@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"go_rabbitmqhandler/internal/service/parser"
+	"go_rabbitmqhandler/service/parser"
 	"reflect"
 	"testing"
 )

@@ -2,8 +2,8 @@ package service_test
 
 import (
 	"bytes"
-	"go_rabbitmqhandler/internal/service"
-	"go_rabbitmqhandler/internal/service/consumer"
+	"go_rabbitmqhandler/service"
+	"go_rabbitmqhandler/service/consumer"
 	"testing"
 )
 

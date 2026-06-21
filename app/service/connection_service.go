@@ -2,9 +2,9 @@ package service
 
 import (
 	"fmt"
-	"go_rabbitmqhandler/internal/config"
-	"go_rabbitmqhandler/internal/service/consumer"
-	"go_rabbitmqhandler/internal/service/publisher"
+	"go_rabbitmqhandler/config"
+	"go_rabbitmqhandler/service/consumer"
+	"go_rabbitmqhandler/service/publisher"
 	"log"
 
 	"github.com/streadway/amqp"
