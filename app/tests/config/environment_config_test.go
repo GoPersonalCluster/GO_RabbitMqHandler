@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/config"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/config"
 )
 
 func TestGetEnvironmentConfig(t *testing.T) {

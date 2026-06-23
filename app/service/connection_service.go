@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/config"
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/consumer"
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/publisher"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/config"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/service/consumer"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/service/publisher"
 
 	"github.com/streadway/amqp"
 )

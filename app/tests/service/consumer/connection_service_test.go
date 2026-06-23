@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service"
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/service/consumer"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/service"
+	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/service/consumer"
 )
 
 func TestConnectionService(t *testing.T) {
