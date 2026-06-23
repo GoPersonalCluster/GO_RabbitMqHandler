@@ -1,4 +1,4 @@
-package math
+package config_test
 
 import (
 	"testing"
