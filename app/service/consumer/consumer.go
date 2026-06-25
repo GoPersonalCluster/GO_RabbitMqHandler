@@ -8,3 +8,4 @@ type Consumer interface {
 	Consume(ch *amqp.Channel)
 	SetConfiguration(config *ConsumerConfig)
 }
+
