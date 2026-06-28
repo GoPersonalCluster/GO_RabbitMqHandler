@@ -1,15 +1,15 @@
-package config_test
+	package config_test
 
-import (
-	"testing"
+	import (
+		"testing"
 
-	"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/config"
-)
+		"github.com/GoPersonalCluster/GO_RabbitMqHandler/app/config"
+	)
 
-func TestGetEnvironmentConfig(t *testing.T) {
-	envConfig := config.NewEnvironmentConfig()
+	func TestGetEnvironmentConfig(t *testing.T) {
+		envConfig := config.NewEnvironmentConfig()
 
-	if envConfig == nil {
-		t.Fatal("expected config, got nil")
+		if envConfig == nil {
+			t.Fatal("expected config, got nil")
+		}
 	}
-}

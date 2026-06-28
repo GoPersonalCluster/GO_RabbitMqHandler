@@ -27,21 +27,27 @@ type Args struct {
 	Value string
 }
 
-func (gNQ *IntegrationEvent) GetNextQueue() (string, error) {
+func (iE *IntegrationEvent) GetNextQueue() (string, error) {
 	return "", nil
 }
 
-func (eP *IntegrationEvent) AddMetaHeader(
+func (iE *IntegrationEvent) AddMetaHeader(
 	source string,
 	eventName string,
-	args []struct {
-		Key   string
-		Value string
-	},
 
 ) {
-
+	iE.MetaHeader = append(iE.MetaHeader, MetaHeader{
+		Source:    source,
+		EventName: eventName,
+	})
 }
+
+func (iE *IntegrationEvent) AddArgs(
+	key string,
+	value string,
+) {
+}
+
 func (eP *IntegrationEvent) ExchangePayload(
 	payload []byte,
 ) {
