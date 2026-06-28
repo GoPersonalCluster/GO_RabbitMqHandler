@@ -14,7 +14,7 @@ type FilterConsumer struct {
 	logPublisher     publisher.PublisherInterface
 }
 
-func (sC *FilterConsumer) SetConfiguration(config *ConsumerConfig) {
+func (sC *FilterConsumer) SetConfiguration(config *FilterConfig) {
 	sC.config = *config
 }
 func (cC *FilterConsumer) configureConsumer(ch *amqp.Channel) error {
@@ -58,24 +58,15 @@ func (cP *FilterConsumer) setGenericPublisher(ch *amqp.Channel) {
 	publisher := publisher.GenericPublisher{}
 	cP.genericPublisher = &publisher
 }
-func (cP *FilterConsumer) getStrategy(message IntegrationEvent) (StrategyHandler, error) {
-	strategy, err := cP.config.AbstractFactory.CreateStrategy(&message)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return strategy, nil
-}
 
 func (c *FilterConsumer) Consume(ch *amqp.Channel) {
 	c.configureConsumer(ch)
-	
+
 	println("end consumer configuration")
 	forever := make(chan bool)
 
 	for d := range c.delivery {
-		
+
 		parser := parser.JsonParser[IntegrationEvent]{}
 		i := parser.NewParser()
 		model, err := i.Decode(d.Body)
@@ -83,26 +74,20 @@ func (c *FilterConsumer) Consume(ch *amqp.Channel) {
 			c.publishErrorLog(err, ch, model)
 			continue
 		}
-		iE ,err := c.config.AbstractFactory.GetQueue( &model )
+		iE, err := c.config.AbstractFactory.GetQueue(&model)
+		if err != nil {
+			c.publishErrorLog(err, ch, iE)
+			continue
+		}
 
-		 
-		// strategy, err := c.getStrategy(model)
-		// if err != nil {
-		// 	c.publishErrorLog(err, ch, model)
-		// 	continue
-		// }
+		qn, err := iE.GetNextQueue()
 
-		// response, err := strategy.Start()
-
-		// if c.genericPublisher != nil {
-		// 	model.ExchangePayload(response)
-		// 	c.genericPublisher.SetChannel(ch , respo)
-		// 	err := c.genericPublisher.Publish(response)
-		// 	if err != nil {
-		// 		c.publishErrorLog(err, ch, model)
-		// 		continue
-		// 	}
-		// }
+		if err != nil {
+			c.publishErrorLog(err, ch, iE)
+			continue
+		}
+		c.genericPublisher.SetChannel(ch, qn)
+		err = c.genericPublisher.Publish(iE.Payload)
 
 		if err != nil {
 			c.publishErrorLog(err, ch, model)
@@ -110,7 +95,6 @@ func (c *FilterConsumer) Consume(ch *amqp.Channel) {
 			continue
 		}
 
-		// ✅ Confirma processamento
 		d.Ack(true)
 
 	}
