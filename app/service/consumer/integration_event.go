@@ -42,10 +42,14 @@ func (iE *IntegrationEvent) AddMetaHeader(
 	})
 }
 
-func (iE *IntegrationEvent) AddArgs(
+func (mH *MetaHeader) AddArgs(
 	key string,
 	value string,
 ) {
+	mH.Args = append(mH.Args, Args{
+		Key:   key,
+		Value: value,
+	})
 }
 
 func (eP *IntegrationEvent) ExchangePayload(
