@@ -31,25 +31,24 @@ func (iE *IntegrationEvent) GetNextQueue() (string, error) {
 	return "", nil
 }
 
-func (iE *IntegrationEvent) AddMetaHeader(
+func (iE *IntegrationEvent) CreateMetaHeader(
 	source string,
 	eventName string,
-
-) {
-	iE.MetaHeader = append(iE.MetaHeader, MetaHeader{
+) MetaHeader {
+	return MetaHeader{
 		Source:    source,
 		EventName: eventName,
-	})
+	}
 }
 
-func (mH *MetaHeader) AddArgs(
+func (mH *MetaHeader) CreateArgs(
 	key string,
 	value string,
-) {
-	mH.Args = append(mH.Args, Args{
+) Args {
+	return Args{
 		Key:   key,
 		Value: value,
-	})
+	}
 }
 
 func (eP *IntegrationEvent) ExchangePayload(
