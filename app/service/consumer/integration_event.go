@@ -1,5 +1,11 @@
 package consumer
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type RabbitMQHandlerConfig struct {
 	Host            string
 	Port            int
@@ -10,11 +16,23 @@ type RabbitMQHandlerConfig struct {
 }
 
 type IntegrationEvent struct {
+	ID         string
 	EventName  string
 	Payload    []byte
 	OccuredAt  int64
 	MetaHeader []MetaHeader
 }
+
+func NewIntegrationEvent(eventName string, payload []byte) IntegrationEvent {
+	ID := uuid.New().String()
+	return IntegrationEvent{
+		ID:        ID,
+		EventName: eventName,
+		Payload:   payload,
+		OccuredAt: time.Now().Unix(),
+	}
+}
+
 type MetaHeader struct {
 	Source    string
 	EventName string
