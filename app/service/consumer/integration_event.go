@@ -56,6 +56,7 @@ func (iE *IntegrationEvent) CreateMetaHeader(
 	return MetaHeader{
 		Source:    source,
 		EventName: eventName,
+		OccuredAt: time.Now().Unix(),
 	}
 }
 
