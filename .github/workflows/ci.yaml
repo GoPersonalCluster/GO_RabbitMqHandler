@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rabbitmq-handler-ci-${GITHUB_SHA}
+  namespace: ci
+spec:
+  backoffLimit: 0
+
+  ttlSecondsAfterFinished: 300
+
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-handler-ci
+
+    spec:
+      restartPolicy: Never
+
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: test
+          image: ghcr.io/waltereidi/rabbitmqhandler/ci:IMAGE_TAG
+
+          imagePullPolicy: Always
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+
+            limits:
+              cpu: "1"
+              memory: "1Gi"
