@@ -1,21 +1,27 @@
-name: RabbitMQ Handler CI
+name: RabbitMQ Handler Build
 
 on:
   push:
     branches:
       - main
-      - develop
+
 
   pull_request:
     branches:
       - main
+  
+  workflow_run:
+    workflows:
+      - ["RabbitMQ Handler Build"]
+    types:
+      - completed
 
 permissions:
   contents: read
   packages: write
 
 jobs:
-  build-and-test:
+  build:
     name: Build CI Image
     runs-on: ubuntu-latest
     continue-on-error: true
