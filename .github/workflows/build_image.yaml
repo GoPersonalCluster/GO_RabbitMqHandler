@@ -12,7 +12,7 @@ on:
   
   workflow_run:
     workflows:
-      - ["RabbitMQ Handler Build"]
+      - build
     types:
       - completed
 
