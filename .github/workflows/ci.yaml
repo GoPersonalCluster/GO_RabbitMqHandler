@@ -1,6 +1,11 @@
 name: RabbitMQ Handler CI
 
 on:
+  workflow_run:
+    workflows: 
+      - build
+    types:
+      - completed
   push:
     branches:
       - main
@@ -15,7 +20,6 @@ permissions:
 
 jobs:
   deploy:
-    needs: build
     name: Build CI Image
     runs-on: ubuntu-latest
     continue-on-error: true
