@@ -1,5 +1,4 @@
-name: RabbitMQ Handler Build
-
+name: Build
 on:
   push:
     branches:

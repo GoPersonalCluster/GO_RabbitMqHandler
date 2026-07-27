@@ -2,8 +2,7 @@ name: RabbitMQ Handler CI
 
 on:
   workflow_run:
-    workflows: 
-      - build
+    workflows: [Build]
     types:
       - completed
   push:
