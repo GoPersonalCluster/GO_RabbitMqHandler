@@ -20,7 +20,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Build CI Image
+    name: Deploy CI Image
     runs-on: ubuntu-latest
     continue-on-error: true
 
