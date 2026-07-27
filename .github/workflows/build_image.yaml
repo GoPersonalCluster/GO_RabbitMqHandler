@@ -22,6 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -34,12 +35,14 @@ jobs:
         run: |
           echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/ci:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: Build CI image
+      - name: Execute Integration Tests
         run: |
-          docker build \
-            -f Dockerfile.ci \
-            -t ${{ steps.image.outputs.name }} \
-            .
+          docker compose \
+            -f ../docker-compose.yml \
+            up \
+            --build \
+            --abort-on-container-exit \
+            --exit-code-from app
 
       - name: Push CI image
         run: |
