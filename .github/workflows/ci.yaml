@@ -31,33 +31,37 @@ jobs:
       # Configure Kubernetes
       # ---------------------------------------------------------
       - name: Configure Kubernetes
+        env:
+          K8S_SERVER: ${{ vars.GO_PERSONAL_CLUSTER_K8S_SERVER }}
+          K8S_CERT: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_CERT }}
+          K8S_TOKEN: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_TOKEN }}
         run: |
-          mkdir -p "$HOME/.kube"
+            mkdir -p "$HOME/.kube"
 
-          cat > "$HOME/.kube/config" <<EOF
-          apiVersion: v1
-          kind: Config
+            printf '%s' "$K8S_CERT" | base64 -d > "$HOME/.kube/ca.crt"
 
-          clusters:
-            - name: cloud-kubernetes
-              cluster:
-                server: ${{ vars.GO_PERSONAL_CLUSTER_K8S_SERVER }}
-                certificate-authority-data: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_CERT }}
+            cat > "$HOME/.kube/config" <<EOF
+            apiVersion: v1
+            kind: Config
+            clusters:
+              - name: cloud-kubernetes
+                cluster:
+                  server: ${K8S_SERVER}
+                  certificate-authority: ${HOME}/.kube/ca.crt
+            users:
+              - name: github-actions
+                user:
+                  token: ${K8S_TOKEN}
+            contexts:
+              - name: github-actions
+                context:
+                  cluster: cloud-kubernetes
+                  user: github-actions
+                  namespace: ci
+            current-context: github-actions
+            EOF
 
-          users:
-            - name: github-actions
-              user:
-                token: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_TOKEN }}
-
-          contexts:
-            - name: github-actions
-              context:
-                cluster: cloud-kubernetes
-                user: github-actions
-                namespace: ci
-
-          current-context: github-actions
-          EOF
+            chmod 600 "$HOME/.kube/config"        
 
       # ---------------------------------------------------------
       # Test Kubernetes connection
