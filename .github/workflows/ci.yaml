@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p "$HOME/.kube"
 
-          printf '%s' "$K8S_CERT" | base64 -d > "$HOME/.kube/ca.crt"
+          printf '%s' "$K8S_CERT" > "$HOME/.kube/ca.crt"
 
           cat > "$HOME/.kube/config" <<EOF
           apiVersion: v1
