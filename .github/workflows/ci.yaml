@@ -37,6 +37,19 @@ jobs:
           printf '%s' "$KUBE_CONFIG" > ~/.kube/config
           chmod 600 ~/.kube/config
 
+      - name: Debug kubeconfig
+        run: |
+          echo "HOME=$HOME"
+          echo "KUBECONFIG=$KUBECONFIG"
+
+          ls -lah ~/.kube || true
+
+          echo "---------------- CONFIG ----------------"
+          cat ~/.kube/config || true
+          echo "----------------------------------------"
+
+          kubectl config view
+          kubectl config current-context || true
       # ---------------------------------------------------------
       # Test Kubernetes connection
       # ---------------------------------------------------------
