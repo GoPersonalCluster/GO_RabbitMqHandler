@@ -48,6 +48,8 @@ metadata:
   namespace: ci
 
 spec:
+  type: NodePort
+
   selector:
     app: rabbitmq
 
@@ -55,9 +57,9 @@ spec:
     - name: amqp
       port: 5672
       targetPort: 5672
+      nodePort: 30672
 
     - name: management
       port: 15672
       targetPort: 15672
-
-  type: ClusterIP
+      nodePort: 31672
