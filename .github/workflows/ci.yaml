@@ -68,14 +68,6 @@ jobs:
             -o yaml | kubectl apply -f -
 
       # ---------------------------------------------------------
-      # Deploy PostgreSQL and RabbitMQ
-      # ---------------------------------------------------------
-      - name: Deploy PostgreSQL and RabbitMQ
-        run: |
-          kubectl apply -f k8s/postgresql.yaml -n ci
-          kubectl apply -f k8s/rabbitmq.yaml -n ci
-
-      # ---------------------------------------------------------
       # Wait for PostgreSQL
       # ---------------------------------------------------------
       - name: Deploy PostgreSQL and RabbitMQ
