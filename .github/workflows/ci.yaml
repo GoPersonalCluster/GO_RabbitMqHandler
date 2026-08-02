@@ -32,7 +32,7 @@ jobs:
       - name: Configure Kubernetes
         env:
           K8S_SERVER: ${{ vars.GO_PERSONAL_CLUSTER_K8S_SERVER }}
-          K8S_CERT: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_CERT }}
+          K8S_CERT: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_CERT }} 
           K8S_TOKEN: ${{ secrets.GO_PERSONAL_CLUSTER_K8S_TOKEN }}
         run: |
           mkdir -p "$HOME/.kube"
