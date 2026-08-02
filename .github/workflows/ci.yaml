@@ -25,7 +25,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Debug kubeconfig
+        run: |
+          echo "KUBECONFIG=$KUBECONFIG"
+          ls -la ~/.kube
+          cat ~/.kube/config
 
+          echo "----------------------"
+
+          kubectl config current-context
+          kubectl config get-contexts
+          kubectl config view --raw
       # ---------------------------------------------------------
       # Configure Kubernetes
       # ---------------------------------------------------------
