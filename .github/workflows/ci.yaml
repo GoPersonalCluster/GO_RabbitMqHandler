@@ -84,16 +84,6 @@ jobs:
           kubectl apply -f .github/workflows/k8s/rabbitmq.yaml -n ci
 
       # ---------------------------------------------------------
-      # Wait for RabbitMQ
-      # ---------------------------------------------------------
-      - name: Wait for RabbitMQ
-        run: |
-          kubectl rollout status \
-            deployment/rabbitmq \
-            -n ci \
-            --timeout=180s
-
-      # ---------------------------------------------------------
       # Show Kubernetes resources
       # ---------------------------------------------------------
       - name: Show Kubernetes resources
