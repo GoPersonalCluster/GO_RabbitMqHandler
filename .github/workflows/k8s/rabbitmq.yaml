@@ -26,10 +26,10 @@ spec:
 
           env:
             - name: RABBITMQ_DEFAULT_USER
-              value: guest
+              value: admin
 
             - name: RABBITMQ_DEFAULT_PASS
-              value: guest
+              value: admin
 
           resources:
             requests:
