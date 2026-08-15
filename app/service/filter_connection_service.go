@@ -56,7 +56,7 @@ func (rmc *FilterRabbitMQConfigComposite) Start() error {
 	}
 
 	for _, consumer := range rmc.channel.consumers {
-		go rmc.consumeAsync(consumer)
+		rmc.consumeAsync(consumer)
 	}
 	return nil
 }
@@ -68,7 +68,7 @@ func (rmc *FilterRabbitMQConfigComposite) TestPublish() {
 func (rmc *FilterRabbitMQConfigComposite) consumeAsync(consumer consumer.Consumer) {
 	print("start")
 
-	consumer.Consume(rmc.channel.channel)
+	go consumer.Consume(rmc.channel.channel)
 }
 
 func (rmc *FilterRabbitMQConfigComposite) isValidConfiguration() error {
