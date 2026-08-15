@@ -26,6 +26,7 @@ func (rmc *FilterRabbitMQConfigComposite) AddConsumer(
 	consumer consumer.Consumer) {
 
 	rmc.channel.consumers = append(rmc.channel.consumers, consumer)
+	println("added consumer to queue qtd:", len(rmc.channel.consumers))
 }
 
 func (rmc *FilterRabbitMQConfigComposite) ConfigureConnection() {
@@ -50,11 +51,12 @@ func (rmc *FilterRabbitMQConfigComposite) ConfigureConnection() {
 }
 
 func (rmc *FilterRabbitMQConfigComposite) Start() error {
+	println("start")
 	err := rmc.isValidConfiguration()
 	if err != nil {
 		return err
 	}
-
+	println("iniciado laço de inicialização dos consumers")
 	for _, consumer := range rmc.channel.consumers {
 		rmc.consumeAsync(consumer)
 	}
@@ -68,7 +70,7 @@ func (rmc *FilterRabbitMQConfigComposite) TestPublish() {
 func (rmc *FilterRabbitMQConfigComposite) consumeAsync(consumer consumer.Consumer) {
 	print("start")
 
-	go consumer.Consume(rmc.channel.channel)
+	consumer.Consume(rmc.channel.channel)
 }
 
 func (rmc *FilterRabbitMQConfigComposite) isValidConfiguration() error {

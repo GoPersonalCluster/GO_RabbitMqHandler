@@ -14,52 +14,54 @@ type FilterConsumer struct {
 	logPublisher     publisher.PublisherInterface
 }
 
-func (sC *FilterConsumer) SetConfiguration(config *ConsumerConfig) {
-	sC.config = *config
+func (fC *FilterConsumer) SetConfiguration(config *ConsumerConfig) {
+	println("set configuration")
+	fC.config = *config
 }
-func (cC *FilterConsumer) configureConsumer(ch *amqp.Channel) error {
+func (fC *FilterConsumer) configureConsumer(ch *amqp.Channel) error {
+	println("iniciado configure consumer")
 	q, err := ch.QueueDeclare(
-		cC.config.QueueName,  // nome
-		cC.config.Durable,    // durável
-		cC.config.AutoDelete, // auto-delete
-		cC.config.Exclusive,  // exclusiva
-		cC.config.NoWait,     // no-wait
-		cC.config.Args,       // args
+		fC.config.QueueName,  // nome
+		fC.config.Durable,    // durável
+		fC.config.AutoDelete, // auto-delete
+		fC.config.Exclusive,  // exclusiva
+		fC.config.NoWait,     // no-wait
+		fC.config.Args,       // args
 	)
-	println("declared queue ", cC.config.QueueName)
+	println("declared queue ", fC.config.QueueName)
 	if err != nil {
 		return err
 	}
 	// 👂 Consumir mensagens
 	msgs, err := ch.Consume(
 		q.Name,
-		cC.config.QueueName,  // nome
-		cC.config.Durable,    // durável
-		cC.config.AutoDelete, // auto-delete
-		cC.config.Exclusive,  // exclusiva
-		cC.config.NoWait,     // no-wait
-		cC.config.Args,       // args
+		fC.config.QueueName,  // nome
+		fC.config.Durable,    // durável
+		fC.config.AutoDelete, // auto-delete
+		fC.config.Exclusive,  // exclusiva
+		fC.config.NoWait,     // no-wait
+		fC.config.Args,       // args
 	)
 
 	if err != nil {
 		return err
 	}
-	cC.delivery = msgs
-	cC.setGenericPublisher(ch)
-	cC.setLogPublisher()
+	fC.delivery = msgs
+	fC.setGenericPublisher(ch)
+	fC.setLogPublisher()
 
 	return nil
 }
-func (cP *FilterConsumer) setLogPublisher() {
-	cP.config.QueueName = "LogQueue"
+func (fC *FilterConsumer) setLogPublisher() {
+	fC.config.QueueName = "LogQueue"
 
 }
-func (cP *FilterConsumer) setGenericPublisher(ch *amqp.Channel) {
+func (fC *FilterConsumer) setGenericPublisher(ch *amqp.Channel) {
 	publisher := publisher.GenericPublisher{}
-	cP.genericPublisher = &publisher
+	fC.genericPublisher = &publisher
 }
-func (cP *FilterConsumer) getStrategy(message IntegrationEvent) (StrategyHandler, error) {
-	strategy, err := cP.config.AbstractFactory.CreateStrategy(&message)
+func (fC *FilterConsumer) getStrategy(message IntegrationEvent) (StrategyHandler, error) {
+	strategy, err := fC.config.AbstractFactory.CreateStrategy(&message)
 
 	if err != nil {
 		return nil, err
@@ -68,50 +70,51 @@ func (cP *FilterConsumer) getStrategy(message IntegrationEvent) (StrategyHandler
 	return strategy, nil
 }
 
-func (c *FilterConsumer) Consume(ch *amqp.Channel) {
-	c.configureConsumer(ch)
+func (fC *FilterConsumer) Consume(ch *amqp.Channel) {
+	println("consumer filter iniciado")
+	fC.configureConsumer(ch)
 
 	println("end consumer configuration")
 	forever := make(chan bool)
-
-	for d := range c.delivery {
+	println("iniciado forever do consumer")
+	for d := range fC.delivery {
 
 		parser := parser.JsonParser[IntegrationEvent]{}
 		i := parser.NewParser()
 		message, err := i.Decode(d.Body)
 		if err != nil {
-			c.publishErrorLog(err, ch, message)
+			fC.publishErrorLog(err, ch, message)
 			continue
 		}
-		strategy, err := c.getStrategy(message)
+		strategy, err := fC.getStrategy(message)
 		if err != nil {
-			c.publishErrorLog(err, ch, message)
+			fC.publishErrorLog(err, ch, message)
 			continue
 		}
 
 		response, err := strategy.Start()
 		if err != nil {
-			c.publishErrorLog(err, ch, message)
+			fC.publishErrorLog(err, ch, message)
 			d.Ack(true)
 			continue
 		}
-		nq , err := message.GetNextQueue()
-		if nq ==  "" {
+		nq, err := message.GetNextQueue()
+		if nq == "" {
 			continue
 		}
 
-		if c.genericPublisher != nil {
+		if fC.genericPublisher != nil {
 			message.ExchangePayload(response)
-			c.genericPublisher.SetChannel(ch , nq )
-			err := c.genericPublisher.Publish(response)
+			fC.genericPublisher.SetChannel(ch, nq)
+			err := fC.genericPublisher.Publish(response)
 			if err != nil {
-				c.publishErrorLog(err, ch, message)
+				fC.publishErrorLog(err, ch, message)
 				continue
 			}
 		}
 
 		if err != nil {
-			c.publishErrorLog(err, ch, message)
+			fC.publishErrorLog(err, ch, message)
 			d.Ack(true)
 			continue
 		}
@@ -122,7 +125,7 @@ func (c *FilterConsumer) Consume(ch *amqp.Channel) {
 	<-forever
 }
 
-func (gC *FilterConsumer) publishErrorLog(err error, ch *amqp.Channel, iE IntegrationEvent) {
+func (fC *FilterConsumer) publishErrorLog(err error, ch *amqp.Channel, iE IntegrationEvent) {
 	logPublisher := publisher.GenericPublisher{}
 	logPublisher.SetChannel(ch, "LogQueue")
 	iE.ExchangePayload([]byte(err.Error()))
